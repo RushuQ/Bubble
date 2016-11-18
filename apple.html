@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>苹果型动画</title>
+    <style type="text/css">
+    body{background-color:#000;}
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="600" height="600"></canvas>
+    <script type="text/javascript">
+    var canvas=document.getElementById('canvas');
+    var context=canvas.getContext("2d");
+    var img=new Image();
+    img.src="Apple2.png";
+    img.onload=function(){
+        context.drawImage(img, 200, 100);
+        var imageData=context.getImageData(200, 100, img.width, img.height);
+        var data=imageData.data;
+        var length=data.length;
+        var rows=100;
+        var cols=100;
+        var pos;
+        var array=[];
+        var cellWidth=parseInt(imageData.width/cols);//每小格宽度有多大
+        var cellHeight=parseInt(imageData.height/rows);//每小格的高度是多大
+        for(var i=1;i<=rows;i++){
+            for(var j=1;j<=cols;j++){
+                pos=imageData.width*4*(cellHeight*i-1)+(j*cellWidth-1)*4;
+                if(data[pos]==255){
+                    var arry={
+                        x0:/*Math.random()**/500,//出发点
+                        y0:/*Math.random()**/500,
+                        x:200+cellWidth*j+parseInt((Math.random()-.5)*4),
+                        y:100+cellHeight*i+parseInt((Math.random()-.5)*4),
+                        w:parseInt(Math.random()*4),
+                        h:parseInt(Math.random()*4),
+                        fillStyle:'rgba('+parseInt(Math.random()*255)+','+parseInt(Math.random()*255)+','+parseInt(Math.random()*255)+',255)',
+                        delay:i/20,//延迟
+                        currTime:0,
+                        count:0,
+                        duration:200,//持续时间
+                        interval:parseInt(Math.random()*0.01)//粒子之间开始移动的间隔
+                    }
+                    array.push(arry);
+                }
+            }
+        }
+        draw();
+        function draw(){
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            var len=array.length,arr=null;
+            var cur_x,cur_y;
+            var cur_time=0,duration=0,cur_delay=0;
+            for(var i=0;i<len;i++){
+                arr=array[i];
+                if(arr.count++>arr.delay){
+                    context.fillStyle=arr.fillStyle;
+                    cur_time=arr.currTime;
+                    duration=arr.duration;
+                    cur_delay=arr.interval;//粒子动画间隔
+                    if(cur_time<duration){
+                        //粒子移动的动画
+                        cur_x=Math.easeInOutExpo(cur_time,arr.x0,arr.x-arr.x0,duration);//速度
+                        cur_y=Math.easeInOutExpo(cur_time,arr.y0,arr.y-arr.y0,duration);
+                        context.fillRect(cur_x,cur_y,1,1);//移动时的颗粒大小
+                        arr.currTime+=Math.random()+0.5;//使用的时间
+                    }else{
+                        context.fillRect(arr.x,arr.y,1,1);//最后的颗粒的大小
+                    }
+                }
+                //context.fillStyle=arr.fillStyle;
+                //context.fillRect(arr.x, arr.y, 1, 1);
+            }
+            requestAnimationFrame(draw);//循环调用
+        }
+    }
+    //速度算法
+    //t动画执行到当前帧所用的时间
+    //b起始值
+    //c总的位移的值
+    //d持续的时间
+    Math.easeInOutExpo=function(t,b,c,d){
+        t/=d/2;
+        if(t<1)return c/2*Math.pow(2,10*(t-1))+b;
+        t--;
+        return c/2*(-Math.pow(2,-10*t)+2)+b;
+    }
+    </script>
+</body>
+</html>
